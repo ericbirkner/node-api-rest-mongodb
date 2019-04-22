@@ -30,7 +30,7 @@ MongoClient.connect(url, (err, client) => {
 
 //weas para leer los parametros
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true,useNewUrlParser: true }));
 
 app.get('/', function(req, res) {
 	var response = {mensaje:"Hola Ql"};
@@ -105,6 +105,7 @@ app.post('/usuarios/update', function(req, res) {
 
 	//console.log('body: ', req.body)
   //console.log('query: ', req.query)
+  var resultado;
 	MongoClient.connect(url, (err, client) => {
 				db = client.db("local");
 				///insertar
@@ -115,10 +116,12 @@ app.post('/usuarios/update', function(req, res) {
 						 apellido: req.body.apellido,
 						 email:req.body.email
 					 }
-				});
+				},function(err, result) {
+             resultado = result;
+        });
 
 	});
-  res.jsonp({response:"OK"});
+  res.jsonp(resultado);
 
 })
 /****************************************************/
