@@ -27,9 +27,9 @@ MongoClient.connect(url, (err, client) => {
 });
 */
 
-// Soporte para bodies codificados en jsonsupport.
+
+//weas para leer los parametros
 app.use(bodyParser.json());
-// Soporte para bodies codificados
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', function(req, res) {
@@ -82,27 +82,60 @@ app.get('/usuarios/:id', function(req, res) {
 
 })
 /****************************************************/
-app.post('/usuarios/:id', function(req, res) {
+app.post('/usuarios/add', function(req, res) {
 
-	var UserId = req.params.id;
-	console.log(UserId);
+	//console.log('body: ', req.body)
+  //console.log('query: ', req.query)
+
 	MongoClient.connect(url, (err, client) => {
-
 				db = client.db("local");
-				db.collection('usuarios').find({"_id": ObjectId(UserId)}).toArray(function(err, docs) {
-
-				 if(docs){
-        		res.jsonp(docs);
-     		 }
-
-				 // Close the DB
-				 client.close();
-				 });
-
+				///insertar
+				db.collection('usuarios').insertOne({
+				 nombre: req.body.nombre,
+				 apellido: req.body.apellido,
+				 email:req.body.email
+		 		});
 	});
+  res.jsonp({response:"OK"});
 
 })
 
+/****************************************************/
+app.post('/usuarios/update', function(req, res) {
+
+	//console.log('body: ', req.body)
+  //console.log('query: ', req.query)
+	MongoClient.connect(url, (err, client) => {
+				db = client.db("local");
+				///insertar
+				db.collection('usuarios').updateOne({"_id":ObjectId(req.body._id)},
+					{
+					 $set: {
+						 nombre: req.body.nombre,
+						 apellido: req.body.apellido,
+						 email:req.body.email
+					 }
+				});
+
+	});
+  res.jsonp({response:"OK"});
+
+})
+/****************************************************/
+app.post('/usuarios/delete', function(req, res) {
+
+	//console.log('body: ', req.body)
+  //console.log('query: ', req.query)
+	MongoClient.connect(url, (err, client) => {
+				db = client.db("local");
+				///insertar
+				db.collection('usuarios').deleteOne({"_id":ObjectId(req.body._id)});
+
+	});
+  res.jsonp({response:"OK"});
+
+})
+/****************************************************/
 
 var server = app.listen(8888, function () {
     console.log('Server is running..');
