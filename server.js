@@ -4,6 +4,8 @@ var app 	= express();
 var bodyParser 	= require('body-parser');
 var request 	= require("request");
 var router = express.Router();
+var md5 = require('md5');
+var crypto = require('crypto');
 var ObjectId = require('mongodb').ObjectID;
 
 //var mongo = require('mongodb');
@@ -29,6 +31,14 @@ MongoClient.connect(url, (err, client) => {
 
 
 //weas para leer los parametros
+
+
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*"); // update to match the domain you will make the request from
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true,useNewUrlParser: true }));
 
@@ -124,11 +134,9 @@ app.post('/usuarios/update', function(req, res) {
   res.jsonp(resultado);
 
 })
-/****************************************************/
+
 app.post('/usuarios/delete', function(req, res) {
 
-	//console.log('body: ', req.body)
-  //console.log('query: ', req.query)
 	MongoClient.connect(url, (err, client) => {
 				db = client.db("local");
 				///insertar
@@ -138,7 +146,55 @@ app.post('/usuarios/delete', function(req, res) {
   res.jsonp({response:"OK"});
 
 })
+
+
+app.post('/login', function(req, res) {
+
+	var email = req.body.email;
+  //var pass = md5(req.body.pass);
+  var pass = req.body.pass;
+  pass = crypto.createHash('md5').update(pass).digest("hex");
+	console.log(email+'/'+pass);
+	MongoClient.connect(url, (err, client) => {
+
+
+				db = client.db("local");
+				db.collection('usuarios').find({'email': email, 'pass':pass}).toArray(function(err, docs) {
+
+				 if(docs){
+        		res.jsonp(docs);
+     		 }
+
+				 // Close the DB
+				 client.close();
+				 });
+
+	});
+
+})
+
+
+app.post('/guardar', function(req, res) {
+
+	//console.log('body: ', req.body)
+  //console.log('query: ', req.query)
+
+	MongoClient.connect(url, (err, client) => {
+				db = client.db("local");
+				///insertar
+				db.collection('usuarios').insertOne({
+				 nombre: req.body.nombre,
+				 apellido: req.body.apellido,
+				 email:req.body.email,
+         password:crypto.createHash('md5').update(req.body.email).digest("hex")
+		 		});
+	});
+  res.jsonp({response:"OK"});
+
+})
+
 /****************************************************/
+
 
 var server = app.listen(8888, function () {
     console.log('Server is running..');
