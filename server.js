@@ -151,24 +151,20 @@ app.post('/usuarios/delete', function(req, res) {
 app.post('/login', function(req, res) {
 
 	var email = req.body.email;
-  //var pass = md5(req.body.pass);
-  var pass = req.body.pass;
+  var pass = req.body.password;
+  console.log(req.body);
   pass = crypto.createHash('md5').update(pass).digest("hex");
 	console.log(email+'/'+pass);
+
 	MongoClient.connect(url, (err, client) => {
-
-
-				db = client.db("local");
-				db.collection('usuarios').find({'email': email, 'pass':pass}).toArray(function(err, docs) {
-
-				 if(docs){
-        		res.jsonp(docs);
-     		 }
-
-				 // Close the DB
-				 client.close();
-				 });
-
+			db = client.db("local");
+			db.collection('usuarios').find({'email': email, 'password':pass}).toArray(function(err, docs) {
+       if(docs){
+      		res.jsonp(docs);
+   		 }
+			 // Close the DB
+			 client.close();
+			 });
 	});
 
 })
@@ -182,12 +178,16 @@ app.post('/guardar', function(req, res) {
 	MongoClient.connect(url, (err, client) => {
 				db = client.db("local");
 				///insertar
-				db.collection('usuarios').insertOne({
+        let password = req.body.password;
+        password = crypto.createHash('md5').update(req.body.password).digest("hex");
+        var data = {
 				 nombre: req.body.nombre,
 				 apellido: req.body.apellido,
 				 email:req.body.email,
-         password:crypto.createHash('md5').update(req.body.email).digest("hex")
-		 		});
+         password:password
+		 		}
+        console.log(data);
+				db.collection('usuarios').insertOne(data);
 	});
   res.jsonp({response:"OK"});
 
